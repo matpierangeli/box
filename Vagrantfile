@@ -14,20 +14,23 @@ Vagrant.configure(2) do |config|
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
+  #config.vm.synced_folder ENV["USERPROFILE"] + "/dev", "/mnt/host-dev"
+
+  CONSOLE_PREFIX = "[box]->"
   config.vm.provision "shell", inline: <<-SHELL.gsub(/^ +/, '')
-    echo "Update package repositories..."
+    echo "#{CONSOLE_PREFIX} Update package repositories..."
     sudo apt-get update --fix-missing #>/dev/null 2>&1
     #sudo apt-get -y upgrade && apt-get -y autoremove #>/dev/null 2>&1
 
-    echo "Install basic packages..."
+    echo "#{CONSOLE_PREFIX} Install basic packages..."
     sudo apt-get install -y git vim curl wget whois unzip virtualbox-guest-* #>/dev/null 2>&1
 
-    echo "System configuration..."
+    echo "#{CONSOLE_PREFIX} System configuration..."
     sudo timedatectl set-timezone Europe/Rome
     sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
     echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-    echo "Create custom user"
+    echo "#{CONSOLE_PREFIX} Create matteo user"
     if ! id -u matteo >/dev/null 2>&1; then
         sudo useradd \
           --create-home \
@@ -39,7 +42,7 @@ Vagrant.configure(2) do |config|
           matteo
     fi
 
-    echo "Install the latest Node version using NVM"
+    echo "#{CONSOLE_PREFIX} Install the latest Node version using NVM"
     sudo -iu matteo <<NODEJS
       if [ ! -d ~/.nvm ]; then
           wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh \
@@ -50,10 +53,10 @@ Vagrant.configure(2) do |config|
       nvm alias default node
     NODEJS
 
-    echo "Install Docker"
+    echo "#{CONSOLE_PREFIX} Install Docker"
     sudo apt-get install -y docker.io >/dev/null 2>&1
     sudo usermod -aG docker matteo
 
-    echo "Done. Yo man!"
+    echo "#{CONSOLE_PREFIX} Done. Yo man!"
   SHELL
 end
