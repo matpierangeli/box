@@ -19,11 +19,11 @@ Vagrant.configure(2) do |config|
   CONSOLE_PREFIX = "[box]->"
   config.vm.provision "shell", inline: <<-SHELL.gsub(/^ +/, '')
     echo "#{CONSOLE_PREFIX} Update package repositories..."
-    sudo apt-get update --fix-missing #>/dev/null 2>&1
+    sudo apt-get update --fix-missing >/dev/null 2>&1
     #sudo apt-get -y upgrade && apt-get -y autoremove #>/dev/null 2>&1
 
     echo "#{CONSOLE_PREFIX} Install basic packages..."
-    sudo apt-get install -y git vim curl wget whois unzip tree autojump apt-show-versions virtualbox-guest-* >/dev/null 2>&1
+    sudo apt-get install -y zsh git vim curl wget whois unzip tree autojump apt-show-versions virtualbox-guest-* >/dev/null 2>&1
 
     echo "#{CONSOLE_PREFIX} System configuration..."
     sudo timedatectl set-timezone Europe/Rome
@@ -38,7 +38,7 @@ Vagrant.configure(2) do |config|
           --groups sudo \
           --comment "Matteo Pierangeli" \
           --password Do/ZZhJZV/pH2 \
-          --shell /bin/bash \
+          --shell /bin/zsh \
           matteo
     fi
 
@@ -51,18 +51,15 @@ Vagrant.configure(2) do |config|
 
     echo "#{CONSOLE_PREFIX} Install dotfiles..."
     sudo -iu matteo <<DOTFILES
-      if [ ! -d ~/.dotfiles ]; then
-        git clone https://github.com/matpierangeli/dotfiles.git ~/.dotfiles >/dev/null 2>&1
-        echo 'source ~/.dotfiles/aliases.sh' >> ~/.bashrc
-        echo 'source ~/.dotfiles/colors.sh' >> ~/.bashrc
-      fi
-      source ~/.bashrc
+      [[ ! -d ~/.dotfiles ]] && git clone https://github.com/matpierangeli/dotfiles.git ~/.dotfiles >/dev/null 2>&1
+      sh ~/.dotfiles/install.sh
+      source ~/.zshrc
     DOTFILES
 
     echo "#{CONSOLE_PREFIX} Install the latest NodeJS version using NVM..."
     sudo -iu matteo <<NODEJS
       if [ ! -d ~/.nvm ]; then
-          wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash >/dev/null 2>&1
+          wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | zsh >/dev/null 2>&1
       fi
       source ~/.nvm/nvm.sh
       nvm install node >/dev/null 2>&1
